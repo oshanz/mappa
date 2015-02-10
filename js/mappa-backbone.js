@@ -1,17 +1,17 @@
 
-var map = {"name":"imagemap","areas":[{"points":[{"x":7,"y":55},{"x":18,"y":139},{"x":294,"y":95},{"x":277,"y":56},{"x":306,"y":34},{"x":295,"y":3}],"shape":"polygon"}]};
+var map = {"name": "imagemap", "areas": [{"points": [{"x": 7, "y": 55}, {"x": 18, "y": 139}, {"x": 294, "y": 95}, {"x": 277, "y": 56}, {"x": 306, "y": 34}, {"x": 295, "y": 3}], "shape": "polygon"}]};
 
 
 /**
  * Checking browser to set requestAnimationFrame funtion.
  */
-function requestAnimFrame(obj){
-    try{
+function requestAnimFrame(obj) {
+    try {
         return window.requestAnimationFrame(obj);
-    } catch(e){
-        try{
+    } catch (e) {
+        try {
             return window.webkitRequestAnimationFrame(obj);
-        } catch (e){
+        } catch (e) {
             return window.mozRequestAnimationFrame(obj);
         }
     }
@@ -20,13 +20,13 @@ function requestAnimFrame(obj){
 /**
  * Checking browser to set cancelAnimationFrame funtion.
  */
-function cancelAnimFrame(obj){
+function cancelAnimFrame(obj) {
     try {
         return window.CancelAnimationFrame(obj);
-    } catch(e){
-        try{
+    } catch (e) {
+        try {
             return window.webkitCancelAnimationFrame(obj);
-        } catch (e){
+        } catch (e) {
             return window.mozCancelAnimationFrame(obj);
         }
     }
@@ -36,14 +36,14 @@ function cancelAnimFrame(obj){
  * Cross-browser support for mouse position.
  * @return array
  */
-function getOffsets(e){
+function getOffsets(e) {
     var mxy = [];
-    if(typeof (e.offsetX) != 'undefined'){
+    if (typeof (e.offsetX) != 'undefined') {
         mx = e.offsetX;
         my = e.offsetY;
     } else {
         mx = parseInt(e.clientX - $(e.target).offset().left);
-        my = parseInt(e.pageY - $(e.target).offset().top) -2;
+        my = parseInt(e.pageY - $(e.target).offset().top) - 2;
     }
     //console.log(e.pageY, $(e.target).offset().top);
     mxy['x'] = mx;
@@ -60,14 +60,14 @@ function getOffsets(e){
  */
 ImageMap = Backbone.RelationalModel.extend({
     relations: [{
-        type: Backbone.HasMany,
-        key: 'areas',
-        relatedModel: 'Area',
-        reverseRelation: {
-            key: 'mappa'
-        },
-        collectionType: 'Areas'
-    }],
+            type: Backbone.HasMany,
+            key: 'areas',
+            relatedModel: 'Area',
+            reverseRelation: {
+                key: 'mappa'
+            },
+            collectionType: 'Areas'
+        }],
     subModelTypes: {
         'polygon': 'Polygon',
         'rect': 'Rectangle',
@@ -80,9 +80,10 @@ ImageMap = Backbone.RelationalModel.extend({
     getMapTag: function() {
         var template = '';
         template += '<map name="<%= name %>">\n';
-            template += '<% _.each(areas, function(a) { %><%= a %><% }); %>';
+        template += '<% _.each(areas, function(a) { %><%= a %><% }); %>';
         template += '</map>';
-        return _.template(template, this.getViewModel());
+        var t = _.template(template);
+        return t(this.getViewModel());
     },
     getViewModel: function() {
         var model = {
@@ -91,6 +92,10 @@ ImageMap = Backbone.RelationalModel.extend({
         model.areas = this.get('areas').map(function(area) {
             return area.getAreaTag();
         });
+        console.log(this.get('areas').length);
+        _.each(this.get('areas'), function(a) {
+            console.log(a);
+        });
         return model;
     }
 });
@@ -98,14 +103,14 @@ ImageMap = Backbone.RelationalModel.extend({
 
 Area = Backbone.RelationalModel.extend({
     relations: [{
-        type: Backbone.HasMany,
-        key: 'points',
-        relatedModel: 'Point',
-        collectionType: 'Points',
-        reverseRelation: {
-            key: 'area'
-        }
-    }],
+            type: Backbone.HasMany,
+            key: 'points',
+            relatedModel: 'Point',
+            collectionType: 'Points',
+            reverseRelation: {
+                key: 'area'
+            }
+        }],
     defaults: {
         selected: false,
         shape: null,
@@ -115,7 +120,7 @@ Area = Backbone.RelationalModel.extend({
     },
     updateOffset: function(nx, ny) {
         var dx = nx - this.offsetX,
-            dy = ny - this.offsetY;
+                dy = ny - this.offsetY;
         this.get('points').forEach(function(point) {
             point.set('x', point.get('x') + dx);
             point.set('y', point.get('y') + dy);
@@ -125,20 +130,20 @@ Area = Backbone.RelationalModel.extend({
     },
     getAreaTag: function() {
         var template = '',
-            model = this.getViewModel();
+                model = this.getViewModel();
         template += '  <area\n';
-            template += '    shape="<%=shape%>"\n';
-            template += '    href="<%=href%>"\n';
-            template += '    alt="<%=alt%>"\n';
-            template += '    coords="<%=coords%>"\n';
-            template += '<% _.each(attrs, function(a) { %>    <%= a.key %>="<%= a.value %>"\n<% }); %>';
+        template += '    shape="<%=shape%>"\n';
+        template += '    href="<%=href%>"\n';
+        template += '    alt="<%=alt%>"\n';
+        template += '    coords="<%=coords%>"\n';
+        template += '<% _.each(attrs, function(a) { %>    <%= a.key %>="<%= a.value %>"\n<% }); %>';
         template += '  />\n';
         return _.template(template, model);
     },
     getCoords: function() {
         return this.get('points').reduce(function(memo, coord, index, list) {
             var val = memo + coord.get('x') + ',' + coord.get('y');
-            if ( index < list.length - 1 ) {
+            if (index < list.length - 1) {
                 val += ',';
             }
             return val;
@@ -163,16 +168,16 @@ Area = Backbone.RelationalModel.extend({
         var point = this.get('points').find(function(point) {
             return isMousedOverPoint(mx, my, point, w, h);
         });
-        if ( point ) {
+        if (point) {
             this.get('points').remove(point);
         }
-        if ( this.get('points').length === 0 && this.collection && this.collection.remove) {
+        if (this.get('points').length === 0 && this.collection && this.collection.remove) {
             this.collection.remove(this);
         }
     },
     isMousedOverPoint: function(mx, my, point, w, h) {
         var x, y;
-        if ( point.x ) {
+        if (point.x) {
             x = point.x;
             y = point.y;
         } else if (point.get) {
@@ -182,9 +187,9 @@ Area = Backbone.RelationalModel.extend({
             return false;
         }
         return (
-            mx >= x-w/2 && mx <= x+w/2 &&
-            my >= y-h/2 && my <= y+h/2
-        );
+                mx >= x - w / 2 && mx <= x + w / 2 &&
+                my >= y - h / 2 && my <= y + h / 2
+                );
     },
     isMousedOver: function(mx, my) {
         var i, j, moused_over = false;
@@ -196,10 +201,10 @@ Area = Backbone.RelationalModel.extend({
                 moused_over = !moused_over;
             }
         }
-        if ( !moused_over ) {
+        if (!moused_over) {
             var isMousedOverPoint = this.isMousedOverPoint;
             points.forEach(function(point) {
-                if ( isMousedOverPoint(mx, my, point, 5, 5) ) {
+                if (isMousedOverPoint(mx, my, point, 5, 5)) {
                     moused_over = true;
                 }
             });
@@ -295,7 +300,7 @@ MapView = Backbone.View.extend({
     initialize: function() {
         // mess with functions first
         _.bindAll(this, 'onLoadImage', 'renderArea', 'rafRender', 'createAreaView', 'clearCanvas', 'drop');
-        this.mouseMove = _.throttle(this.mouseMove, 1000/60);
+        this.mouseMove = _.throttle(this.mouseMove, 1000 / 60);
         // this.updateHTML = _.throttle(this.updateHTML, 1000);
         this.current_tool = TOOL_ARROW;
         this.model = new ImageMap(map);
@@ -326,11 +331,11 @@ MapView = Backbone.View.extend({
     drop: function(e) {
         this.$el.removeClass('hover');
         e.preventDefault();
-        if ( !e.dataTransfer.files.length ) {
+        if (!e.dataTransfer.files.length) {
             return;
         }
         var acceptable = ['image/jpg', 'image/png', 'image/gif', 'image/webm'];
-        if ( acceptable.indexOf(e.dataTransfer.files[0].type) === -1 ) {
+        if (acceptable.indexOf(e.dataTransfer.files[0].type) === -1) {
             return;
         }
         var file_reader = new FileReader();
@@ -350,7 +355,7 @@ MapView = Backbone.View.extend({
     updateHTML: function() {
         var contents = this.model.getMapTag();
         this.$('textarea').val(contents);
-        if ( !this.dont_render_list ) {
+        if (!this.dont_render_list) {
             this.$('.mappa-list').html(this.getList());
         }
     },
@@ -358,14 +363,14 @@ MapView = Backbone.View.extend({
         var list_template = '';
         list_template += '<% _(areas).each(function(area, index) { %>';
         list_template += '<li data-index="<%= index %>" class="selected-<%= area.selected %>">';
-            list_template += '<button class="delete">Delete</button> ';
-            list_template += '<span class="shape"><%= area.shape %></span> ';
-            list_template += '<label>href: <input name="href" value="<%= area.href %>" /></label> ';
-            list_template += '<label>alt: <input name="alt" value="<%= area.alt %>" /></label>';
+        list_template += '<button class="delete">Delete</button> ';
+        list_template += '<span class="shape"><%= area.shape %></span> ';
+        list_template += '<label>href: <input name="href" value="<%= area.href %>" /></label> ';
+        list_template += '<label>alt: <input name="alt" value="<%= area.alt %>" /></label>';
         list_template += '</li>';
         list_template += '<% }); %>';
-        var html = _.template(list_template, this.model.toJSON());
-        return html;
+        var html = _.template(list_template);
+        return html(this.model.toJSON());
     },
     onLoadImage: function() {
         this.canvas.width = this.image.width;
@@ -380,23 +385,29 @@ MapView = Backbone.View.extend({
         this.image.src = url;
     },
     createAreaViews: function() {
-        if ( !this.area_views ) {
+        if (!this.area_views) {
             this.area_views = [];
         }
         this.model.get('areas').forEach(this.createAreaView);
     },
     createAreaView: function(area) {
         var area_view;
-        switch(area.get('shape')) {
-            case 'polygon': area_view = new PolygonView({model: area}); break;
-            case 'rect': area_view = new RectangleView({model: area}); break;
-            case 'circle': area_view = new CircleView({model: area}); break;
+        switch (area.get('shape')) {
+            case 'polygon':
+                area_view = new PolygonView({model: area});
+                break;
+            case 'rect':
+                area_view = new RectangleView({model: area});
+                break;
+            case 'circle':
+                area_view = new CircleView({model: area});
+                break;
         }
         this.area_views.push(area_view);
     },
     render: function(dont_render_list) {
         this.dont_render_list = dont_render_list;
-        if ( this.rafId ) {
+        if (this.rafId) {
             //webkitCancelAnimationFrame(this.rafId);
             cancelAnimFrame(this.rafId);
         }
@@ -426,31 +437,31 @@ MapView = Backbone.View.extend({
     renderPoints: function() {
         var context = this.context;
         this.area_views.forEach(function(area_view) {
-            if ( area_view.model.get('selected') || area_view.model.highlighted ) {
+            if (area_view.model.get('selected') || area_view.model.highlighted) {
                 area_view.model.get('points').forEach(function(point, index, list) {
-                    if ( index === 0 ) {
+                    if (index === 0) {
                         context.fillStyle = '#f00';
-                    } else if ( index === list.length - 1 ) {
+                    } else if (index === list.length - 1) {
                         context.fillStyle = '#000';
                     } else {
                         context.fillStyle = '#0ff';
                     }
                     var w = 5, h = 5,
-                        x = point.get('x') - w/2,
-                        y = point.get('y') - h/2;
+                            x = point.get('x') - w / 2,
+                            y = point.get('y') - h / 2;
                     context.fillRect(x, y, w, h);
                     context.closePath();
                 });
             } /*else if ( area_view.model.highlighted ) {
-                area_view.model.get('points').forEach(function(point) {
-                    context.fillStyle = '#0ff';
-                    var w = 5, h = 5,
-                        x = point.get('x') - w/2,
-                        y = point.get('y') - h/2;
-                    context.fillRect(x, y, w, h);
-                    context.closePath();
-                });
-            }*/
+             area_view.model.get('points').forEach(function(point) {
+             context.fillStyle = '#0ff';
+             var w = 5, h = 5,
+             x = point.get('x') - w/2,
+             y = point.get('y') - h/2;
+             context.fillRect(x, y, w, h);
+             context.closePath();
+             });
+             }*/
         });
     },
     mouseMove: function(e) {
@@ -458,10 +469,10 @@ MapView = Backbone.View.extend({
         var mxy = getOffsets(e);
         e.offsetX = mxy['x'];
         e.offsetY = mxy['y'];
-        if ( this.moving_point ) {
+        if (this.moving_point) {
             this.moving_point.set('x', e.offsetX);
             this.moving_point.set('y', e.offsetY);
-        } else if ( this.moving_view ) {
+        } else if (this.moving_view) {
             this.moving_view.model.updateOffset(e.offsetX, e.offsetY);
         }
         this.area_views.forEach(function(area_view, index) {
@@ -472,26 +483,26 @@ MapView = Backbone.View.extend({
     },
     mouseDown: function(e) {
         var map_view = this,
-            moving_view, moving_point;
-            //console.log('Drawing.');
-            var mxy = getOffsets(e);
-            //console.log(mxy);
-            var mx = mxy['x'];
-            var my = mxy['y'];
-            
-            //console.log(parseInt(e.clientX - $(e.target).offset().left));
-        if ( this.current_tool === TOOL_ARROW ) {
+                moving_view, moving_point;
+        //console.log('Drawing.');
+        var mxy = getOffsets(e);
+        //console.log(mxy);
+        var mx = mxy['x'];
+        var my = mxy['y'];
+
+        //console.log(parseInt(e.clientX - $(e.target).offset().left));
+        if (this.current_tool === TOOL_ARROW) {
             this.area_views.forEach(function(area_view, index) {
                 area_view.model.get('points').forEach(function(point) {
-                    if ( area_view.model.isMousedOverPoint(mx, my, point, 5, 5) ) {
+                    if (area_view.model.isMousedOverPoint(mx, my, point, 5, 5)) {
                         moving_view = area_view;
                         moving_point = point;
                     }
                 });
-                if ( !map_view.moving_view ) {
+                if (!map_view.moving_view) {
                     var moused_over = area_view.model.isMousedOver(mx, my);
                     area_view.model.set('selected', moused_over);
-                    if ( moused_over ) {
+                    if (moused_over) {
                         moving_view = area_view;
                         area_view.model.offsetX = mx;
                         area_view.model.offsetY = my;
@@ -509,20 +520,20 @@ MapView = Backbone.View.extend({
         var mxy = getOffsets(e);
         e.offsetX = mxy['x'];
         e.offsetY = mxy['y'];
-        if ( this.adding_view && this.current_tool === TOOL_POLYGON ) {
+        if (this.adding_view && this.current_tool === TOOL_POLYGON) {
             this.adding_view.model.get('points').add({
                 x: e.offsetX,
                 y: e.offsetY
             });
             this.render();
-        } else if ( this.current_tool === TOOL_POLYGON ) {
-            var area = new Polygon({points: [{x:e.offsetX, y:e.offsetY}], selected: true});
+        } else if (this.current_tool === TOOL_POLYGON) {
+            var area = new Polygon({points: [{x: e.offsetX, y: e.offsetY}], selected: true});
             var area_view = new PolygonView({model: area});
             this.model.get('areas').add(area);
             this.area_views.push(area_view);
             this.adding_view = area_view;
             this.render();
-        } else if ( this.adding_view && this.current_tool === TOOL_DELETE ) {
+        } else if (this.adding_view && this.current_tool === TOOL_DELETE) {
             this.adding_view.model.deleteMousedOverPoint(e.offsetX, e.offsetY, 5, 5);
             this.render();
         } else {
@@ -551,9 +562,9 @@ AreaView = Backbone.View.extend({
         lineWidth: 1
     },
     setupContext: function(context) {
-        var r = ( this.model.get('selected') ) ?
-            this.contextAttributesSelected :
-            this.contextAttributesUnselected;
+        var r = (this.model.get('selected')) ?
+                this.contextAttributesSelected :
+                this.contextAttributesUnselected;
 
         this.applyContextAttributes(context, r);
 
@@ -564,25 +575,26 @@ AreaView = Backbone.View.extend({
             context[key] = val;
         });
     }/*,
-    isMousedOver: function(mx, my) {
-        return this.model.isMousedOver(mx, my);
-    },
-    isMousedOverPoint: function(mx, my, point, w, h) {
-        return this.model.isMousedOverPoint(mx, my, point, w, h);
-    }*/
+     isMousedOver: function(mx, my) {
+     return this.model.isMousedOver(mx, my);
+     },
+     isMousedOverPoint: function(mx, my, point, w, h) {
+     return this.model.isMousedOverPoint(mx, my, point, w, h);
+     }*/
 });
 PolygonView = AreaView.extend({
     render: function(context) {
         var points = this.model.get('points').getPoints();
         var r = this.setupContext(context);
 
-        if ( !points[0] ) {
+        if (!points[0]) {
             return;
         }
         context.moveTo(points[0].x, points[0].y);
         context.beginPath();
         points.forEach(function(point, index) {
-            if ( !index ) return;
+            if (!index)
+                return;
             context.lineTo(point.x, point.y);
         });
         context.lineTo(points[0].x, points[0].y);
@@ -592,5 +604,5 @@ PolygonView = AreaView.extend({
     }
 });
 
-mapview = new MapView({el:'.mappa'});
+mapview = new MapView({el: '.mappa'});
 mapview.loadImage('img/default.png');
