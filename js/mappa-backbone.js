@@ -92,10 +92,6 @@ ImageMap = Backbone.RelationalModel.extend({
         model.areas = this.get('areas').map(function(area) {
             return area.getAreaTag();
         });
-        console.log(this.get('areas').length);
-        _.each(this.get('areas'), function(a) {
-            console.log(a);
-        });
         return model;
     }
 });
@@ -138,7 +134,8 @@ Area = Backbone.RelationalModel.extend({
         template += '    coords="<%=coords%>"\n';
         template += '<% _.each(attrs, function(a) { %>    <%= a.key %>="<%= a.value %>"\n<% }); %>';
         template += '  />\n';
-        return _.template(template, model);
+        var t = _.template(template);
+        return t(model);
     },
     getCoords: function() {
         return this.get('points').reduce(function(memo, coord, index, list) {
